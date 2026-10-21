@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>C&amp;I Simulator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="stylesheet" href="../../core/theme.css">
+<link rel="stylesheet" href="unit.css">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app">
+  <a class="back" href="../../index.html">← Все узлы</a>
+  <header>
+    <h1>C&amp;I Simulator<small>стенд F2</small></h1>
+    <div class="hdr-tools">
+      <button class="btn" id="btnFsDown" aria-label="Уменьшить шрифт">A−</button>
+      <button class="btn" id="btnFsUp" aria-label="Увеличить шрифт">A+</button>
+    </div>
+  </header>
+
+  <div class="chips" id="chips">
+    <div class="chip" id="chI"><span>Ток петли</span><b id="vI">—</b></div>
+    <div class="chip" id="chSp"><span>Уставка</span><b id="vSp">—</b></div>
+    <div class="chip" id="chH"><span>Ход</span><b id="vH">—</b></div>
+    <div class="chip" id="chU"><span>U клемм</span><b id="vU">—</b></div>
+    <div class="chip" id="chP"><span>P привода</span><b id="vP">—</b></div>
+    <div class="chip" id="chS"><span>P питания</span><b id="vS">—</b></div>
+  </div>
+  <div class="alarms" id="alarms" aria-live="polite"></div>
+
+  <div class="stage" id="stage">
+    <svg id="cut" viewBox="0 0 360 446" role="img" aria-label="Разрез: петля 4–20 мА, позиционер, бустер, SOV, мембранный привод, клапан">
+      <defs>
+        <clipPath id="clipCase"><path d="M152,170 Q152,120 230,120 Q308,120 308,170 Q308,234 230,234 Q152,234 152,170 Z"/></clipPath>
+        <clipPath id="clipBody"><ellipse cx="230" cy="400" rx="48" ry="36"/></clipPath>
+      </defs>
+
+      <!-- легенда -->
+      <g transform="translate(168,14)">
+        <text class="lbl-strong" x="0" y="0" id="tCaption">Привод мембранный · НЗ (ВО)</text>
+        <g transform="translate(0,14)">
+          <line x1="0" y1="0" x2="14" y2="0" stroke="var(--air)" stroke-width="4" stroke-linecap="round"/><text class="lbl" x="19" y="3">воздух (цвет = давление)</text>
+          <line x1="0" y1="13" x2="14" y2="13" stroke="var(--wire)" stroke-width="2"/><text class="lbl" x="19" y="16">ток 4–20 мА</text>
+          <line x1="0" y1="26" x2="14" y2="26" stroke="var(--fluid)" stroke-width="3"/><text class="lbl" x="19" y="29">среда через седло</text>
+        </g>
+        <text class="lbl" x="0" y="70">Тапните узел — откроется разрез</text>
+      </g>
+
+      <!-- АСУ ТП / AO -->
+      <rect class="dev" x="8" y="8" width="84" height="48" rx="5"/>
+      <text class="lbl-strong" x="14" y="21">АСУ ТП · AO</text>
+      <text class="mono" x="14" y="44" font-size="14" font-weight="700" id="tAO">12.00</text>
+      <text class="lbl" x="66" y="44">мА</text>
+      <!-- провода -->
+      <path id="wP" class="wire" d="M62,56 V64 H98 V262 H104"/>
+      <path id="wN" class="wire" d="M38,56 V72 H92 V276 H104"/>
+      <path id="wPf" class="wire-f" d="M62,56 V64 H98 V262 H104"/>
+      <path id="wNf" class="wire-f" d="M104,276 H92 V72 H38 V56"/>
+      <g id="gBarrier">
+        <rect class="dev" x="84" y="84" width="22" height="24" rx="3"/>
+        <text class="lbl-strong" x="87" y="99" font-size="7.5">Ex i</text>
+      </g>
+      <text class="lbl" x="66" y="84" id="tWireLbl">+</text>
+      <text class="lbl" x="42" y="84">−</text>
+
+      <!-- воздух: трубки (подложка, давление, частицы) -->
+      <g id="tubes"></g>
+
+      <!-- фильтр-регулятор -->
+      <g>
+        <rect class="dev" x="14" y="336" width="40" height="26" rx="4"/>
+        <text class="lbl-strong" x="19" y="353" font-size="7.5">ФР</text>
+        <circle cx="44" cy="349" r="6" fill="var(--panel)" stroke="var(--metal-ink)"/>
+        <line id="gaugeSup" x1="44" y1="349" x2="44" y2="344" stroke="var(--alarm)" stroke-width="1.2"/>
+        <text class="lbl" x="2" y="375">Питание</text>
+      </g>
+
+      <!-- бустер -->
+      <g id="gBooster">
+        <rect class="dev" x="18" y="178" width="68" height="48" rx="6"/>
+        <rect x="24" y="186" width="56" height="10" rx="2" fill="var(--air)" id="bSigFill" opacity=".2"/>
+        <line x1="24" y1="201" x2="80" y2="201" stroke="var(--metal-ink)" stroke-width="1.6" id="bDia"/>
+        <rect x="24" y="205" width="56" height="13" rx="2" fill="var(--air)" id="bOutFill" opacity=".2"/>
+        <text class="lbl-strong" x="27" y="194" font-size="7.5">Бустер</text>
+        <circle cx="76" cy="221" r="3" fill="none" stroke="var(--metal-ink)"/>
+        <line x1="76" y1="221" x2="76" y2="221" stroke="var(--metal-ink)" stroke-width="1.6" id="bNeedle"/>
+        <path id="puffB" class="puff" d="M30,226 V236"/>
+      </g>
+
+      <!-- SOV -->
+      <g id="gSov">
+        <rect class="dev" x="22" y="118" width="60" height="40" rx="5"/>
+        <rect x="30" y="124" width="22" height="16" rx="2" fill="none" stroke="var(--wire)" id="sovCoil"/>
+        <text class="lbl-strong" x="56" y="135" font-size="7.5">SOV</text>
+        <text class="lbl mono" x="28" y="153" font-size="7" id="tSov">P→A</text>
+        <path id="puffS" class="puff" d="M52,118 V108"/>
+      </g>
+
+      <!-- привод -->
+      <g id="gAct">
+        <path class="metal" d="M150,170 Q150,118 230,118 Q310,118 310,170 Z"/>
+        <path class="metal" d="M150,170 Q150,236 230,236 Q310,236 310,170 Z"/>
+        <g clip-path="url(#clipCase)">
+          <rect x="150" y="120" width="160" height="116" fill="var(--panel)"/>
+          <rect id="airCh" x="150" y="170" width="160" height="66" fill="var(--air)" opacity=".3"/>
+        </g>
+        <polyline id="spring1" fill="none" stroke="var(--metal-ink)" stroke-width="1.4" points=""/>
+        <polyline id="spring2" fill="none" stroke="var(--metal-ink)" stroke-width="1.4" points=""/>
+        <path id="diaL" fill="none" stroke="var(--ink)" stroke-width="1.6" d=""/>
+        <path id="diaR" fill="none" stroke="var(--ink)" stroke-width="1.6" d=""/>
+        <rect id="plate" class="metal-d" x="168" y="0" width="124" height="6" rx="1"/>
+        <rect x="146" y="168" width="168" height="4" class="metal-d"/>
+        <path id="puffA" class="puff" d="M230,118 V108"/>
+        <text class="lbl" x="236" y="114" id="tVent">дыхательное</text>
+      </g>
+      <!-- рама, шток, позиционер -->
+      <rect class="metal" x="188" y="236" width="84" height="8" rx="1"/>
+      <rect class="metal" x="196" y="244" width="8" height="92"/>
+      <rect class="metal" x="256" y="244" width="8" height="92"/>
+      <g id="travelScale">
+        <line x1="270" y1="270" x2="270" y2="300" stroke="var(--metal-ink)"/>
+        <line x1="268" y1="270" x2="275" y2="270" stroke="var(--metal-ink)"/><text class="lbl mono" x="277" y="273" font-size="7">100</text>
+        <line x1="268" y1="285" x2="273" y2="285" stroke="var(--metal-ink)"/><text class="lbl mono" x="277" y="288" font-size="7">50</text>
+        <line x1="268" y1="300" x2="275" y2="300" stroke="var(--metal-ink)"/><text class="lbl mono" x="277" y="303" font-size="7">0 %</text>
+      </g>
+      <line id="stem" x1="230" y1="0" x2="230" y2="0" stroke="var(--metal-ink)" stroke-width="4"/>
+      <g id="clamp"><rect x="222" y="-4" width="40" height="8" rx="1" class="metal-d"/><path d="M262,0 L268,-3 V3 Z" fill="var(--alarm)"/></g>
+      <rect class="metal" x="186" y="276" width="10" height="16"/>
+      <line id="lever" x1="186" y1="284" x2="230" y2="290" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round"/>
+      <circle id="leverPin" cx="230" cy="290" r="2.6" fill="var(--alarm)"/>
+      <g id="gPos">
+        <rect class="dev" x="104" y="252" width="82" height="66" rx="6"/>
+        <rect x="112" y="259" width="66" height="22" rx="2" fill="var(--bg)" stroke="var(--line)"/>
+        <text class="mono" x="116" y="274" font-size="10" font-weight="700" id="tLcd">AUTO 50.0</text>
+        <circle cx="122" cy="294" r="4" fill="var(--steel2)" stroke="var(--metal-ink)"/>
+        <circle cx="134" cy="294" r="4" fill="var(--steel2)" stroke="var(--metal-ink)"/>
+        <circle cx="146" cy="294" r="4" fill="var(--steel2)" stroke="var(--metal-ink)"/>
+        <text class="lbl-strong" x="110" y="312" font-size="7.5">Позиционер</text>
+        <circle cx="173" cy="296" r="4" fill="var(--panel)" stroke="var(--metal-ink)"/>
+        <line id="posIP" x1="173" y1="296" x2="173" y2="292" stroke="var(--air)" stroke-width="1.5"/>
+        <path id="puffP" class="puff" d="M172,318 V330"/>
+      </g>
+      <!-- клапан -->
+      <rect class="metal" x="200" y="336" width="60" height="7" rx="1"/>
+      <rect class="metal" x="214" y="343" width="32" height="22"/>
+      <rect x="0" y="383" width="360" height="34" fill="var(--fluid)" opacity=".12"/>
+      <line x1="0" y1="383" x2="360" y2="383" stroke="var(--metal-ink)"/>
+      <line x1="0" y1="417" x2="360" y2="417" stroke="var(--metal-ink)"/>
+      <ellipse cx="230" cy="400" rx="50" ry="38" class="metal"/>
+      <g clip-path="url(#clipBody)">
+        <rect x="178" y="362" width="104" height="76" fill="var(--panel)"/>
+        <rect x="178" y="362" width="104" height="76" fill="var(--fluid)" opacity=".14"/>
+        <path id="flowIn" class="fluid-f" d="M182,394 C200,394 212,398 222,407 L238,407 C250,410 258,408 280,406"/>
+        <rect x="206" y="404" width="14" height="6" class="metal-d"/>
+        <rect x="240" y="404" width="14" height="6" class="metal-d"/>
+        <path d="M180,386 C196,386 204,392 206,404" fill="none" stroke="var(--metal-ink)" stroke-width="2"/>
+        <path d="M254,410 C258,418 266,420 280,420" fill="none" stroke="var(--metal-ink)" stroke-width="2"/>
+        <path id="plug" class="metal-d" d="M215,0 h30 v8 q0,6 -6,6 h-18 q-6,0 -6,-6 Z"/>
+      </g>
+      <path id="flowL" class="fluid-f" d="M0,400 H182"/>
+      <path id="flowR" class="fluid-f" d="M280,400 H360"/>
+      <text class="lbl" x="4" y="432">вход среды</text>
+      <text class="lbl" x="308" y="432">выход</text>
+      <text class="lbl-strong" x="286" y="373" id="tFlow">Q 50 %</text>
+
+      <!-- подписи (переключаемые) -->
+      <g class="lbls">
+        <text class="lbl" x="212" y="148" id="tSpringLbl">пружина</text>
+        <text class="lbl" x="160" y="230" id="tAirLbl">воздух</text>
+        <text class="lbl" x="296" y="166">мембрана</text>
+        <text class="lbl" x="234" y="326">шток</text>
+        <text class="lbl" x="262" y="414">седло</text>
+      </g>
+
+      <!-- зоны тапа -->
+      <rect class="node-hit" data-node="loop" x="4" y="4" width="108" height="110"/>
+      <rect class="node-hit" data-node="sov" x="18" y="114" width="68" height="48"/>
+      <rect class="node-hit" data-node="booster" x="14" y="174" width="76" height="56"/>
+      <rect class="node-hit" data-node="supply" x="4" y="330" width="56" height="48"/>
+      <rect class="node-hit" data-node="pos" x="100" y="248" width="90" height="74"/>
+      <rect class="node-hit" data-node="act" x="146" y="114" width="168" height="126"/>
+      <rect class="node-hit" data-node="valve" x="176" y="340" width="110" height="100"/>
+      <rect id="sel" class="node-sel" x="0" y="0" width="0" height="0" rx="6"/>
+    </svg>
+    <div class="hint" id="hint">×1</div>
+  </div>
+
+  <section class="detail" id="detail" hidden>
+    <h2><span id="dTitle">Узел</span><button class="btn" id="dClose" aria-label="Закрыть разрез узла">✕</button></h2>
+    <svg id="dSvg" viewBox="0 0 320 170"></svg>
+    <div class="kv" id="dKv"></div>
+    <p id="dText"></p>
+    <p class="note" id="dNote"></p>
+  </section>
+
+  <section class="trend">
+    <div class="trend-h">
+      <span>Тренд, 30 с</span>
+      <span class="leg">
+        <span><i style="border-color:var(--muted);border-top-style:dashed"></i>уставка</span>
+        <span><i style="border-color:var(--ink)"></i>ход</span>
+        <span><i style="border-color:var(--air)"></i>P привода</span>
+      </span>
+    </div>
+    <canvas id="trend" aria-label="Тренд уставки, хода и давления в приводе"></canvas>
+  </section>
+
+  <details class="grp" open>
+    <summary>Воздух и обвязка</summary>
+    <div class="grp-b">
+      <div class="row"><label for="inSup">Давление питания</label><b class="mono" id="vSup">4.50 бар</b></div>
+      <input type="range" id="inSup" min="0" max="7" step="0.1" value="4.5">
+      <div class="row"><label for="selUnit">Единицы давления</label>
+        <select id="selUnit"><option value="bar">бар</option><option value="kgf">кгс/см²</option><option value="kPa">кПа</option><option value="MPa">МПа</option></select></div>
+      <div class="row"><label class="sw" for="tgBoost"><input type="checkbox" id="tgBoost">Объёмный бустер</label></div>
+      <div id="boostOpts" hidden>
+        <div class="row"><label for="inBypass">Игла байпаса</label><b class="mono" id="vBypass">40 %</b></div>
+        <input type="range" id="inBypass" min="0" max="100" step="5" value="40">
+      </div>
+      <div class="row"><label class="sw" for="tgSov"><input type="checkbox" id="tgSov">Отсечной соленоид (SOV)</label>
+        <label class="sw" for="tgSovE" id="sovEWrap" hidden><input type="checkbox" id="tgSovE" checked>напряжение</label></div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>Позиционер</summary>
+    <div class="grp-b">
+      <button class="btn primary" id="btnInit">AUTO-инициализация</button>
+      <div class="status" id="initStatus">Калибровка выполнена (исходная). После перестановки пальца рычага или замены привода повторите инициализацию.</div>
+      <div class="row"><label for="selDir">Действие</label>
+        <select id="selDir"><option value="inc">прямое: 4 мА → 0 %</option><option value="dec">обратное: 4 мА → 100 %</option></select></div>
+      <div class="row"><label for="selChar">Характеристика</label>
+        <select id="selChar"><option value="lin">линейная</option><option value="eqp">равнопроцентная 1:50</option><option value="qo">быстрое открытие</option></select></div>
+      <div class="row"><label for="selSr">Диапазон сигнала</label>
+        <select id="selSr"><option value="4-20">4–20 мА</option><option value="4-12">4–12 мА (split)</option><option value="12-20">12–20 мА (split)</option></select></div>
+      <div class="row"><label for="selPAct">Настроен на привод</label>
+        <select id="selPAct"><option value="ATO">ВО (НЗ)</option><option value="ATC">ВЗ (НО)</option></select></div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Монтаж и петля</summary>
+    <div class="grp-b">
+      <div class="row"><label for="selAct">Привод фактически</label>
+        <select id="selAct"><option value="ATO">ВО · НЗ (FC)</option><option value="ATC">ВЗ · НО (FO)</option></select></div>
+      <div class="row"><label for="selMark">Палец рычага на метке</label>
+        <select id="selMark"><option value="10">10 мм</option><option value="20">20 мм</option><option value="30" selected>30 мм (ход 30)</option><option value="60">60 мм</option><option value="120">120 мм</option></select></div>
+      <div class="row"><label class="sw" for="tgBarrier"><input type="checkbox" id="tgBarrier">Барьер Ex i в петле</label></div>
+      <div class="row"><label for="selRw">Сопротивление линии</label>
+        <select id="selRw"><option value="50">50 Ом</option><option value="400">400 Ом</option><option value="900">900 Ом</option></select></div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Неисправность</summary>
+    <div class="grp-b">
+      <div class="row"><label for="selFault">Ввести</label><select id="selFault"></select></div>
+      <div class="status" id="faultNote">Нет неисправностей. Выберите одну и посмотрите, как меняется поведение клапана.</div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Вид</summary>
+    <div class="grp-b">
+      <div class="row"><label class="sw" for="tgLabels"><input type="checkbox" id="tgLabels" checked>Подписи на разрезе</label></div>
+      <div class="row"><span class="seg" role="group" aria-label="Скорость">
+        <button class="btn" id="spd1" aria-pressed="true">×1</button>
+        <button class="btn" id="spd025" aria-pressed="false">×0.25</button>
+        <button class="btn" id="btnPause" aria-pressed="false">Пауза</button></span>
+        <button class="btn" id="btnReset">Сброс стенда</button></div>
+      <div class="row"><label for="selSkin">Тема</label>
+        <select id="selSkin"><option value="">как в системе</option><option value="light">светлая</option><option value="dark">тёмная</option><option value="navy">navy</option><option value="contrast">контраст</option></select></div>
+    </div>
+  </details>
+
+  <footer>
+    <span>Учебная модель, параметры типовые. Не заменяет РЭ производителя.</span>
+    <span class="mono" id="ver">sim-core</span>
+  </footer>
+
+  <div class="dock">
+    <div class="dock-top">
+      <button class="btn" id="mDown" aria-label="Минус 0.1 мА">−</button>
+      <input type="range" id="inI" min="0" max="24" step="0.05" value="12" aria-label="Ток петли, мА">
+      <button class="btn" id="mUp" aria-label="Плюс 0.1 мА">+</button>
+      <span class="ma" id="vIdock">12.00<small>мА</small></span>
+    </div>
+    <div class="presets" id="presets"></div>
+  </div>
+</div>
+<script src="../../core/sim-core.js"></script>
+<script src="scene.js"></script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../../sw.js').catch(()=>{});</script>
+</body>
+</html>

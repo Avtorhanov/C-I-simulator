@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>C&amp;I Simulator · Отсечной</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="stylesheet" href="../../core/theme.css">
+<link rel="stylesheet" href="unit.css">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app">
+  <a class="back" href="../../index.html">← Все узлы</a>
+  <header>
+    <h1>C&amp;I Simulator<small>Отсечной клапан ПАЗ · шаровой, реечный привод</small></h1>
+  </header>
+
+  <div class="chips">
+    <div class="chip" id="chA"><span>Угол</span><b id="vA">—</b></div>
+    <div class="chip" id="chP"><span>P привода</span><b id="vP">—</b></div>
+    <div class="chip" id="chS"><span>P сигнала</span><b id="vS">—</b></div>
+    <div class="chip" id="chI"><span>Позиционер</span><b id="vI">—</b></div>
+    <div class="chip" id="chT"><span>Время хода</span><b id="vT">—</b></div>
+    <div class="chip" id="chSup"><span>P питания</span><b id="vSup">—</b></div>
+  </div>
+  <div class="alarms" id="alarms" aria-live="polite"></div>
+
+  <div class="stage" id="stage">
+   <div class="view" id="vScheme">
+    <svg id="sc" viewBox="0 0 360 480" role="img" aria-label="Отсечной клапан: ФР, тройник, позиционер, SOV-РСУ, SOV-ПАЗ, бустер, реечный привод, БКВ, шаровой кран">
+      <defs>
+        <clipPath id="clipBore"><rect x="26" y="132" width="308" height="64"/></clipPath>
+        <clipPath id="clipBody"><ellipse cx="180" cy="408" rx="56" ry="44"/></clipPath>
+        <clipPath id="clipShaftLow"><rect x="174" y="206" width="12" height="150"/></clipPath>
+        <clipPath id="clipCpl"><rect x="167" y="328" width="26" height="20" rx="3"/></clipPath>
+        <clipPath id="clipShaftAct"><rect x="174" y="100" width="12" height="96"/></clipPath>
+        <clipPath id="clipPin"><rect x="161" y="140" width="38" height="48" rx="3"/></clipPath>
+        <radialGradient id="gBall" cx="38%" cy="32%" r="70%"><stop offset="0" style="stop-color:var(--chip)"/><stop offset=".55" style="stop-color:var(--steel2)"/><stop offset="1" style="stop-color:var(--steel)"/></radialGradient>
+        <clipPath id="clipTun"><path id="tunClip" d=""/></clipPath>
+        <clipPath id="clipBallC"><circle cx="180" cy="408" r="31"/></clipPath>
+        <clipPath id="clipStem"><rect x="175" y="356" width="10" height="26"/></clipPath>
+        <clipPath id="clipBkv"><rect x="152" y="48" width="56" height="50" rx="7"/></clipPath>
+      </defs>
+
+      <!-- кронштейн-переходник и шток (позади панели) -->
+      <g id="gShaft">
+        <rect class="metal" x="154" y="206" width="52" height="6"/>
+        <rect class="metal" x="154" y="210" width="7" height="146"/>
+        <rect class="metal" x="199" y="210" width="7" height="146"/>
+        <rect class="metal" x="148" y="352" width="64" height="8" rx="1"/>
+        <rect id="shaftLow" x="174" y="206" width="12" height="150" class="metal"/>
+        <g clip-path="url(#clipShaftLow)"><g id="shLow"></g></g>
+        <rect x="167" y="328" width="26" height="20" rx="3" class="metal-d"/>
+        <g clip-path="url(#clipCpl)"><g id="shCpl"></g></g>
+        <g id="rotArrow" opacity="0">
+          <path d="M166,300 A14,5 0 1 0 194,300" fill="none" stroke="var(--hl)" stroke-width="2"/>
+          <path d="M194,300 l-6,-3 l1,6 z" fill="var(--hl)"/>
+        </g>
+        <text class="z" x="163" y="314" id="tRot">вал</text>
+        <text class="z" x="196" y="345">муфта</text>
+        <text class="z" x="208" y="250">кронштейн-</text><text class="z" x="208" y="255">переходник</text>
+      </g>
+
+      <!-- кран -->
+      <g id="gValve">
+        <rect x="0" y="386" width="360" height="44" fill="var(--fluid)" opacity=".1"/>
+        <line x1="0" y1="386" x2="112" y2="386" stroke="var(--metal-ink)"/><line x1="248" y1="386" x2="360" y2="386" stroke="var(--metal-ink)"/>
+        <line x1="0" y1="430" x2="112" y2="430" stroke="var(--metal-ink)"/><line x1="248" y1="430" x2="360" y2="430" stroke="var(--metal-ink)"/>
+        <rect class="metal" x="110" y="372" width="12" height="72" rx="2"/>
+        <rect class="metal" x="238" y="372" width="12" height="72" rx="2"/>
+        <ellipse class="metal" cx="180" cy="408" rx="58" ry="46"/>
+        <g clip-path="url(#clipBody)">
+          <rect x="120" y="360" width="120" height="96" fill="var(--panel)"/>
+          <rect x="120" y="390" width="120" height="36" fill="var(--fluid)" opacity=".16"/>
+          <rect class="metal-d" x="141" y="392" width="6" height="32"/>
+          <rect class="metal-d" x="213" y="392" width="6" height="32"/>
+          <rect x="175" y="356" width="10" height="26" class="metal"/>
+          <g clip-path="url(#clipStem)"><g id="shStem"></g></g>
+          <g id="ball">
+            <circle cx="180" cy="408" r="31" fill="url(#gBall)" stroke="var(--metal-ink)" stroke-width=".9"/>
+            <g id="ballMer" fill="none" stroke="var(--metal-ink)" stroke-width=".6"></g>
+            <g clip-path="url(#clipBallC)">
+            <path id="bTun" d="" fill="var(--hole)" fill-opacity=".55"/>
+            <g clip-path="url(#clipTun)"><path id="flowBall" class="fluid-f" d="M140,408 H220"/></g>
+            <ellipse id="bRim" cx="180" cy="408" rx="11" ry="11" fill="var(--hole)" fill-opacity=".3" stroke="var(--chip)" stroke-width="1"/>
+            </g>
+            <rect x="176" y="376" width="8" height="4" fill="var(--metal-ink)"/>
+          </g>
+        </g>
+        <path id="flowL" class="fluid-f" d="M0,408 H122"/>
+        <path id="flowR" class="fluid-f" d="M238,408 H360"/>
+        <text class="z" x="138" y="388">седло</text><text class="z" x="210" y="388">седло</text>
+        <text class="z" x="214" y="372">шар</text><text class="z" x="128" y="366" id="tBore">отверстие шара поперёк потока</text><text class="z" x="187" y="370">шток</text>
+        <text class="lbl" x="4" y="444">среда: этан →</text>
+        <text class="lbs" x="126" y="470">Кран шаровой 6″ ANSI 300</text>
+        <text class="lbl" x="290" y="444" id="tFlow">Q 0 %</text>
+      </g>
+
+      <!-- привод -->
+      <g id="gAct">
+        <path class="actc" d="M76,124 H34 Q18,124 18,140 V188 Q18,204 34,204 H76 Z"/>
+        <path class="actc" d="M284,124 H326 Q342,124 342,140 V188 Q342,204 326,204 H284 Z"/>
+        <rect class="metal" x="76" y="122" width="208" height="84" rx="3"/>
+        <g clip-path="url(#clipBore)">
+          <rect x="26" y="132" width="308" height="64" fill="var(--panel)"/>
+          <rect id="airC" x="140" y="133" width="80" height="62" fill="var(--air)" opacity=".2"/>
+          <polyline id="spL1" class="spring" points=""/><polyline id="spL2" class="spring" points=""/>
+          <polyline id="spR1" class="spring" points=""/><polyline id="spR2" class="spring" points=""/>
+          <rect id="pisL" class="metal-d" x="130" y="133" width="10" height="62"/>
+          <rect id="pisR" class="metal-d" x="220" y="133" width="10" height="62"/>
+          <g id="rackD"><rect x="150" y="149" width="70" height="7" fill="var(--steel)" opacity=".55"/><g id="rackDT"></g></g>
+          <rect x="174" y="132" width="12" height="64" class="metal"/>
+          <g clip-path="url(#clipShaftAct)"><g id="shAct"></g></g>
+          <rect x="161" y="140" width="38" height="48" rx="3" class="metal"/>
+          <g clip-path="url(#clipPin)"><g id="pinT"></g></g>
+          <g id="rackU"><rect class="metal-d" x="140" y="168" width="70" height="8"/><g id="rackUT"></g></g>
+        </g>
+        <rect x="26" y="132" width="308" height="64" fill="none" stroke="var(--metal-ink)" stroke-width=".6"/>
+        <circle cx="156" cy="202" r="2.5" fill="var(--metal-ink)"/>
+        <path id="puffCapL" class="puff" d="M18,150 H8"/>
+        <path id="puffCapR" class="puff" d="M342,150 H352"/>
+        <text class="z" x="30" y="129">пружины (сжаты при открытии)</text>
+        <text class="z" x="290" y="200">«CAUTION · сжатые пружины»</text>
+        <text class="z" x="112" y="174">рейка (перед.)</text><text class="z" x="226" y="155">рейка (задн.)</text>
+        <text class="z" x="202" y="146">шестерня</text>
+        <text class="z" x="112" y="131">поршень</text><text class="z" x="232" y="131">поршень</text>
+        <text class="z" x="96" y="210">порт A</text>
+        <text class="lbs" x="22" y="118">Привод реечный</text>
+      </g>
+
+      <!-- кронштейн NAMUR, муфта, БКВ -->
+      <rect class="metal" x="154" y="100" width="52" height="5"/>
+      <rect class="metal" x="156" y="105" width="5" height="17"/><rect class="metal" x="199" y="105" width="5" height="17"/>
+      <rect class="metal" x="174" y="100" width="12" height="24"/>
+      <g id="cpl"><circle cx="180" cy="112" r="7" class="metal"/><circle id="cplPin" cx="180" cy="106" r="1.6" fill="var(--alarm)"/></g>
+      <line id="link" x1="180" y1="106" x2="236" y2="100" stroke="var(--metal-ink)" stroke-width="1.2"/>
+      <text class="z" x="200" y="114">рычажная связь</text>
+      <g id="gBkv">
+        <rect class="dev" x="150" y="46" width="60" height="54" rx="8"/>
+        <g clip-path="url(#clipBkv)">
+          <rect x="152" y="48" width="56" height="50" fill="var(--panel)"/>
+          <g id="cam">
+            <circle cx="180" cy="72" r="9" class="metal"/>
+            <rect x="166" y="70" width="6" height="4" fill="var(--steel)" stroke="var(--metal-ink)" stroke-width=".4"/>
+            <rect x="178" y="58" width="4" height="6" fill="var(--steel)" stroke="var(--metal-ink)" stroke-width=".4"/>
+          </g>
+          <rect id="s0" x="155" y="69" width="7" height="6" rx="1"/>
+          <rect id="s1" x="198" y="69" width="7" height="6" rx="1"/>
+          <rect id="s2" x="190" y="51" width="7" height="6" rx="1" transform="rotate(35 193.5 54)"/>
+        </g>
+        <ellipse cx="180" cy="44" rx="13" ry="7" class="metal"/>
+        <rect id="dome" x="172" y="40.5" width="16" height="7" rx="2" fill="var(--alarm)"/>
+        <text id="domeT" x="174.2" y="46" font-size="4.6" font-weight="700" fill="var(--bg)">ЗАКР</text>
+        <text class="z" x="153" y="67">ЗАКР</text><text class="z" x="199" y="67">ОТКР</text><text class="z" x="190" y="50">№3</text>
+        <text class="zv" id="tS0" x="153" y="84">—</text><text class="zv" id="tS1" x="194" y="84">—</text><text class="zv" id="tS2" x="154" y="58">—</text>
+        <text class="z" x="171" y="88">кулачок</text>
+        <text class="lbs" x="128" y="58">БКВ</text>
+        <text class="z" x="152" y="96">3 × NAMUR 8.2 В</text>
+      </g>
+
+      <!-- позиционер -->
+      <g id="gPos">
+        <rect class="dev" x="232" y="40" width="104" height="68" rx="6"/>
+        <rect x="240" y="47" width="62" height="24" rx="2" fill="var(--bg)" stroke="var(--line)"/>
+        <text id="lcd1" x="244" y="58" font-size="8.5" font-weight="700" class="mono">0.0 %</text>
+        <text id="lcd2" x="244" y="67" font-size="6" class="mono">AUTO</text>
+        <circle cx="314" cy="56" r="7" fill="var(--panel)" stroke="var(--metal-ink)"/><line id="gSupN" x1="314" y1="56" x2="314" y2="51" stroke="var(--alarm)" stroke-width="1"/>
+        <circle cx="314" cy="80" r="7" fill="var(--panel)" stroke="var(--metal-ink)"/><line id="gOutN" x1="314" y1="80" x2="314" y2="75" stroke="var(--alarm)" stroke-width="1"/>
+        <rect x="244" y="76" width="14" height="10" rx="2" fill="none" stroke="var(--wire)"/>
+        <line id="ipInd" x1="251" y1="81" x2="251" y2="78" stroke="var(--air)" stroke-width="1.4"/>
+        <text class="z" x="242" y="91">I/P · реле</text>
+        <text class="z" x="323" y="58">SUP</text><text class="z" x="323" y="82">OUT</text>
+        <text class="zv" id="tPosI" x="262" y="84">4.0 мА</text>
+        <path id="puffPos" class="puff" d="M270,108 V118"/>
+        <text class="lbs" x="240" y="102">Позиционер</text>
+      </g>
+
+      <!-- трубки -->
+      <g id="tubes"></g>
+
+      <!-- полка панели -->
+      <rect class="metal" x="4" y="218" width="306" height="5"/>
+
+      <!-- ФР -->
+      <g id="gFr">
+        <rect class="brass" x="17" y="228" width="14" height="6" rx="2"/>
+        <rect class="brass" x="8" y="234" width="32" height="40" rx="4"/>
+        <path class="metal" d="M12,274 H36 L32,296 H16 Z"/>
+        <line x1="24" y1="296" x2="24" y2="302" stroke="var(--metal-ink)" stroke-width="1.5"/>
+        <circle cx="24" cy="254" r="8" fill="var(--panel)" stroke="var(--metal-ink)"/>
+        <line id="gFrN" x1="24" y1="254" x2="24" y2="248" stroke="var(--alarm)" stroke-width="1"/>
+        <text class="lbs" x="9" y="314">ФР</text>
+        <text class="z" x="2" y="227">ручка настройки</text><text class="z" x="27" y="300">дренаж</text><text class="z" x="2" y="285">стакан</text>
+        <text class="lbl" x="0" y="266">⟶</text>
+      </g>
+      <circle cx="56" cy="270" r="3" fill="var(--metal-ink)"/>
+      <text class="z" x="48" y="263">тройник</text>
+
+      <!-- бустер -->
+      <g id="gBoost">
+        <rect class="dev" x="70" y="238" width="70" height="60" rx="8"/>
+        <rect id="bSig" x="76" y="243" width="58" height="12" rx="2" fill="var(--air)" opacity=".2"/>
+        <line id="bDia" x1="74" y1="258" x2="136" y2="258" stroke="var(--ink)" stroke-width="1.6"/>
+        <rect id="bOut" x="76" y="261" width="58" height="13" rx="2" fill="var(--air)" opacity=".2"/>
+        <rect id="bSup" x="76" y="279" width="58" height="13" rx="2" fill="var(--air)" opacity=".2"/>
+        <rect id="bPop" x="98" y="274" width="14" height="5" rx="1" class="metal-d"/>
+        <circle cx="132" cy="285" r="3" fill="none" stroke="var(--metal-ink)" stroke-width=".7"/>
+        <circle cx="132" cy="294" r="3" fill="none" stroke="var(--metal-ink)" stroke-width=".7" stroke-dasharray="1 1"/>
+        <path id="puffB" class="puff" d="M136,294 H150"/>
+        <text class="z" x="79" y="251">сигнал</text><text class="z" x="79" y="270">выход → привод</text><text class="z" x="79" y="289">питание</text>
+        <text class="z" x="120" y="301">выхлоп (сетка)</text><text class="z" x="114" y="257">мембрана</text>
+        <text class="lbs" x="80" y="312">Бустер</text>
+      </g>
+
+      <!-- SOV-ПАЗ и SOV-РСУ -->
+      <g id="gSovP"></g>
+      <g id="gSovR"></g>
+
+      <!-- зоны тапа -->
+      <rect class="node-hit" data-node="pos" x="228" y="36" width="112" height="76"/>
+      <rect class="node-hit" data-node="bkv" x="146" y="28" width="68" height="76"/>
+      <rect class="node-hit" data-node="act" x="16" y="112" width="328" height="96"/>
+      <rect class="node-hit" data-node="fr" x="2" y="222" width="44" height="96"/>
+      <rect class="node-hit" data-node="tee" x="46" y="256" width="20" height="28"/>
+      <rect class="node-hit" data-node="booster" x="66" y="226" width="80" height="90"/>
+      <rect class="node-hit" data-node="sovP" x="190" y="224" width="58" height="80"/>
+      <rect class="node-hit" data-node="sovR" x="250" y="224" width="58" height="80"/>
+      <rect class="node-hit" data-node="shaft" x="150" y="320" width="60" height="34"/>
+      <rect class="node-hit" data-node="valve" x="104" y="356" width="152" height="118"/>
+      <rect id="hl" class="hl" x="0" y="0" width="0" height="0" rx="6" display="none"/>
+    </svg>
+    <div class="hint" id="hint">×1</div>
+    <div class="zbar">
+      <button class="btn" id="zAll" aria-label="Вся схема">⤢</button>
+      <button class="btn fsb" data-fs aria-label="На весь экран">⛶</button>
+    </div>
+   </div>
+   <div class="view" id="vDetail" hidden>
+    <div class="dhead"><b id="dTitle">Деталь</b>
+      <button class="btn primary" id="dPlay" aria-label="Показать срабатывание" title="Показать срабатывание">▶</button>
+      <button class="btn fsb" data-fs aria-label="На весь экран">⛶</button>
+      <button class="btn" id="dBack">Схема</button></div>
+    <svg id="dsvg" viewBox="0 0 320 200" role="img" aria-label="Разрез детали"></svg>
+    <div class="dcap" id="dcap"></div>
+   </div>
+    <div class="cap" id="cap" hidden>
+      <div class="cap-row"><span class="cap-n" id="capN">1/1</span><span class="cap-n" id="capTitle"></span></div>
+      <div class="cap-t" id="capT"></div>
+      <div class="cap-row">
+        <button class="btn" id="capPrev">‹ Назад</button>
+        <button class="btn" id="capStop">Выйти</button>
+        <button class="btn primary" id="capNext">Далее ›</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="card" id="card" hidden>
+    <h2><span id="cTitle">Деталь</span><button class="btn" id="cClose" aria-label="Закрыть карточку">✕</button></h2>
+    <div class="kv" id="cKv"></div>
+    <p id="cWhat"></p>
+    <h3>Как работает</h3>
+    <p id="cHow"></p>
+    <h3>Что проверять и что бывает</h3>
+    <ul id="cChk"></ul>
+  </section>
+
+  <details class="grp" open>
+    <summary>Как работает: по шагам</summary>
+    <div class="grp-b">
+      <div class="seq" id="seqs"></div>
+      <p class="note" style="color:var(--muted);font-size:.86em">На каждом шаге открывается разрез детали и показывается её работа. Тап по детали на схеме — разрез, ▶ — показать срабатывание. Щипок — зум, ⤢ — вся схема, ⛶ — на весь экран.</p>
+    </div>
+  </details>
+
+  <section class="trend">
+    <div class="trend-h">
+      <span>Тренд, 30 с</span>
+      <span class="leg">
+        <span><i style="border-color:var(--ink)"></i>угол</span>
+        <span><i style="border-color:var(--air)"></i>P привода</span>
+        <span><i style="border-color:var(--muted);border-top-style:dashed"></i>P сигнала</span>
+      </span>
+    </div>
+    <canvas id="trend" aria-label="Тренд угла, давления в приводе и сигнала бустера"></canvas>
+  </section>
+
+  <details class="grp">
+    <summary>Справка: общая картина и детали</summary>
+    <div class="grp-b" id="help"></div>
+  </details>
+
+  <details class="grp">
+    <summary>Неисправность</summary>
+    <div class="grp-b">
+      <div class="row"><label for="selFault">Ввести</label><select id="selFault"></select></div>
+      <div class="status" id="faultNote">Нет неисправностей. Выберите — на схеме отметится место, ниже признаки, причины, поиск и устранение.</div>
+      <div class="fi" id="fInfo" hidden>
+        <h3>Признаки</h3><ul id="fSym"></ul>
+        <h3>Возможные причины</h3><ul id="fCause"></ul>
+        <h3>Проверка и поиск</h3><ul id="fChk"></ul>
+        <h3>Устранение</h3><ul id="fFix"></ul>
+        <h3>Где искать</h3><div class="parts" id="fWhere"></div>
+        <p class="warn">Типовые причины и действия. Конкретные операции — по РЭ производителя, регламентам и нарядам-допускам объекта.</p>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Настройки</summary>
+    <div class="grp-b">
+      <div class="row"><label for="inSup">Давление после ФР</label><b class="mono" id="vSupS">4.50 бар</b></div>
+      <input type="range" id="inSup" min="0" max="7" step="0.1" value="4.5">
+      <div class="row"><label for="selUnit">Единицы</label>
+        <select id="selUnit"><option value="bar">бар</option><option value="kgf">кгс/см²</option><option value="kPa">кПа</option><option value="MPa">МПа</option></select></div>
+      <div class="row"><span role="group" aria-label="Скорость" style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn" id="spd1" aria-pressed="true">×1</button>
+        <button class="btn" id="spd025" aria-pressed="false">×0.25</button>
+        <button class="btn" id="btnPause" aria-pressed="false">Пауза</button></span>
+        <span style="display:flex;gap:4px"><button class="btn" id="btnFsDown" aria-label="Уменьшить шрифт">A−</button><button class="btn" id="btnFsUp" aria-label="Увеличить шрифт">A+</button></span></div>
+      <div class="row"><label class="sw" for="tgLabels"><input type="checkbox" id="tgLabels" checked>Подписи на схеме</label><button class="btn" id="btnReset">Сброс</button></div>
+      <div class="row"><label for="selSkin">Тема</label>
+        <select id="selSkin"><option value="">как в системе</option><option value="light">светлая</option><option value="dark">тёмная</option><option value="navy">navy</option><option value="contrast">контраст</option></select></div>
+    </div>
+  </details>
+
+  <footer>
+    <span>Учебная модель по узлу объекта, параметры типовые. Не заменяет РЭ производителя и проектную документацию.</span>
+    <span class="mono" id="ver">sim-esd</span>
+  </footer>
+
+  <div class="dock">
+    <div class="dock-r">
+      <button class="btn" id="bOpen">ОТКРЫТЬ<small>РСУ</small></button>
+      <button class="btn" id="bClose">ЗАКРЫТЬ<small>РСУ</small></button>
+      <button class="btn danger" id="bPaz" aria-pressed="false">ПАЗ<small id="bPazS">норма</small></button>
+      <button class="btn" id="bPst">PST<small>10 %</small></button>
+    </div>
+    <div class="di">
+      <span class="lamp r" id="lC"><i></i>ЗАКР</span>
+      <span class="lamp g" id="lO"><i></i>ОТКР</span>
+      <span class="lamp y" id="l3"><i></i>№3</span>
+      <span style="color:var(--muted);font-weight:500" id="diNote"></span>
+    </div>
+  </div>
+</div>
+<script src="../../core/sim-core.js"></script>
+<script src="sim.js"></script>
+<script src="details.js"></script>
+<script src="scene.js"></script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../../sw.js').catch(()=>{});</script>
+</body>
+</html>

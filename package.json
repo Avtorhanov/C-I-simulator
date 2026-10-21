@@ -1,0 +1,12 @@
+{
+  "name": "c-i-simulator",
+  "version": "0.3.1",
+  "private": true,
+  "description": "C&I Simulator — тренажёр приводов для КИПиА и АСУ ТП",
+  "scripts": {
+    "test": "node --test test/sim-core.test.js test/esd-ball-rp.test.js",
+    "build": "node tools/build-artifact.js esd-ball-rp && node tools/build-artifact.js ctl-globe-diaph",
+    "e2e": "python3 e2e/esd_e2e.py 1 && python3 e2e/ctl_e2e.py 1",
+    "serve": "python3 -m http.server 8080"
+  }
+}

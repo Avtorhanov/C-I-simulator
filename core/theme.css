@@ -1,0 +1,45 @@
+/* C&I Simulator — общие токены цветов и темы (системная, light, dark, navy, contrast) */
+:root{
+  --bg:#E8ECEF; --panel:#F6F8F9; --ink:#16202A; --muted:#566573; --line:#C3CCD4;
+  --steel:#8E9AA6; --steel2:#C2CAD2; --metal-ink:#3E4A55;
+  --air:#1F6BC9; --wire:#B97F05; --fluid:#0F8574; --alarm:#C3312A; --ok:#2B7F43; --warn:#B66A00;
+  --tube:#AEB8C1; --chip:#FFFFFF; --act:#2F6BC6; --brass:#B08A3E; --hl:#E0A100; --hole:#2B3540;
+  --f-ui: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
+  --f-mono: ui-monospace,"SFMono-Regular","Roboto Mono",Menlo,Consolas,monospace;
+  --scale:1;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10151A; --panel:#171F26; --ink:#E2E7EB; --muted:#93A0AC; --line:#2B3640;
+  --steel:#5A6773; --steel2:#36424D; --metal-ink:#AEB9C3;
+  --air:#5BA3FF; --wire:#EFB12E; --fluid:#2DC2A8; --alarm:#FF6A5C; --ok:#4FC46E; --warn:#F2A23A;
+  --tube:#3A4651; --chip:#1D2730; --act:#3D7BE0; --brass:#C9A45A; --hl:#FFC233; --hole:#06090C; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#10151A; --panel:#171F26; --ink:#E2E7EB; --muted:#93A0AC; --line:#2B3640;
+  --steel:#5A6773; --steel2:#36424D; --metal-ink:#AEB9C3;
+  --air:#5BA3FF; --wire:#EFB12E; --fluid:#2DC2A8; --alarm:#FF6A5C; --ok:#4FC46E; --warn:#F2A23A;
+  --tube:#3A4651; --chip:#1D2730; --act:#3D7BE0; --brass:#C9A45A; --hl:#FFC233; --hole:#06090C; color-scheme:dark }
+:root[data-skin="light"]{
+  --bg:#E8ECEF; --panel:#F6F8F9; --ink:#16202A; --muted:#566573; --line:#C3CCD4;
+  --steel:#8E9AA6; --steel2:#C2CAD2; --metal-ink:#3E4A55;
+  --air:#1F6BC9; --wire:#B97F05; --fluid:#0F8574; --alarm:#C3312A; --ok:#2B7F43; --warn:#B66A00;
+  --tube:#AEB8C1; --chip:#FFFFFF; --act:#2F6BC6; --brass:#B08A3E; --hl:#E0A100; --hole:#2B3540; color-scheme:light }
+:root[data-skin="dark"]{
+  --bg:#10151A; --panel:#171F26; --ink:#E2E7EB; --muted:#93A0AC; --line:#2B3640;
+  --steel:#5A6773; --steel2:#36424D; --metal-ink:#AEB9C3;
+  --air:#5BA3FF; --wire:#EFB12E; --fluid:#2DC2A8; --alarm:#FF6A5C; --ok:#4FC46E; --warn:#F2A23A;
+  --tube:#3A4651; --chip:#1D2730; --act:#3D7BE0; --brass:#C9A45A; --hl:#FFC233; --hole:#06090C; color-scheme:dark }
+:root[data-skin="navy"]{
+  --bg:#0B192C; --panel:#10233D; --ink:#DCE6F3; --muted:#8EA4BF; --line:#22406A;
+  --steel:#4F6686; --steel2:#2C4466; --metal-ink:#B3C3D8;
+  --air:#66B4FF; --wire:#FFC34D; --fluid:#38CFB4; --alarm:#FF6F61; --ok:#5BD27D; --warn:#FFAA45;
+  --tube:#2D4870; --chip:#132A48; --act:#4A86E8; --brass:#D2AE62; --hl:#FFD24D; --hole:#06090C; color-scheme:dark }
+:root[data-skin="contrast"]{
+  --bg:#000000; --panel:#0B0B0B; --ink:#FFFFFF; --muted:#E6E6E6; --line:#FFFFFF;
+  --steel:#8A8A8A; --steel2:#3C3C3C; --metal-ink:#FFFFFF;
+  --air:#22CCFF; --wire:#FFE500; --fluid:#00F5A0; --alarm:#FF4033; --ok:#33FF77; --warn:#FFB000;
+  --tube:#555555; --chip:#000000; --act:#3D8BFF; --brass:#FFC85A; --hl:#FFE500; --hole:#06090C; color-scheme:dark }
+
+
+/* общая ссылка «к каталогу» */
+.back{display:inline-block;font:500 .85em var(--f-ui);color:var(--muted);text-decoration:none;padding:2px 0}
+.back:hover{color:var(--ink)}
